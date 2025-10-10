@@ -1,0 +1,61 @@
+{
+  "name": "tts-pipelines",
+  "version": "0.0.1",
+  "description": "tts pipelines for non supporting onnx models",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/esm/types/index.d.ts",
+        "default": "./lib/esm/index.mjs"
+      },
+      "require": {
+        "types": "./lib/cjs/types/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      }
+    }
+  },
+  "types": "./lib/cjs/types/index.d.ts",
+  "main": "./lib/cjs/index.js",
+  "files": [
+    "lib/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "del-cli ./lib",
+    "build": "npm run clean && npm run build:esm && npm run build:cjs",
+    "build:esm": "tsc -p ./config/tsconfig.esm.json && move-file lib/esm/index.js lib/esm/index.mjs",
+    "build:cjs": "tsc -p ./config/tsconfig.cjs.json",
+    "prepack": "npm run build",
+    "clean:docs": "npm run clean && del-cli package-lock.json",
+    "doc": "jsdoc2md ./lib/esm/login.js >> ./docs/login.md && jsdoc2md ./lib/esm/chat.js >> ./docs/chat.md",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write src/**/*.{ts,js}"
+  },
+  "keywords": [
+    "onnx",
+    "tts",
+    "text-to-speach",
+    "machine-learning"
+  ],
+  "homepage": "https://github.com/rahulsushilsharma/tts-pipelines#readme",
+  "bugs": {
+    "url": "https://github.com/rahulsushilsharma/tts-pipelines/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rahulsushilsharma/tts-pipelines.git"
+  },
+  "license": "ISC",
+  "author": "Rahul Sharma <rahu8299@gmail.com>",
+  "dependencies": {
+    "onnxruntime-node": "^1.23.0",
+    "onnxruntime-web": "^1.23.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "onnxruntime-node"
+    ]
+  }
+}
