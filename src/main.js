@@ -18,7 +18,7 @@ async function initializeModel(useWebGPU = false) {
     const model_path = `../public/tts-model/model_quantized.onnx`;
     tts = await KittenTTS.from_pretrained(model_path, {
       dtype: "q8",
-      device,
+      device: "wasm",
     });
 
     console.log({ status: "ready", voices: tts.voices, device });
@@ -187,13 +187,17 @@ function resampleLinear(input, inRate, outRate) {
 async function main_() {
   await initializeModel(true);
 
-  await main({
-    data: {
-      text: "Kokoro is a frontier TTS model for its size of 82 million parameters",
-      useWebGPU: true,
-      voice: "expr-voice-2-m",
-      speed: 1.0,
-    },
+  const input = document.querySelector("#text");
+  const submit = document.querySelector("#generate");
+
+  submit.addEventListener("click", () => {
+    main({
+      data: {
+        text: input.value,
+        voice: "expr-voice-2-m",
+        speed: 1.0,
+      },
+    });
   });
 }
 
