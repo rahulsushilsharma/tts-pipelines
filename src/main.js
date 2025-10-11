@@ -1,5 +1,5 @@
-import { KittenTTS, TextSplitterStream } from "./lib/kitten-tts.js";
-import { detectWebGPU } from "./utils/utils.js";
+import { KittenTTS } from "./lib/kitten-tts.js";
+import { detectWebGPU, TextSplitterStream } from "./utils/utils.js";
 
 let tts = null;
 let device = "wasm";

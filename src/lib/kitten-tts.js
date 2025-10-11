@@ -65,7 +65,7 @@ export class KittenTTS {
 
       // Load voices from the local voices.json file (also cached)
       const voicesResponse = await cachedFetch(
-        `../../public/tts-model/voices.json`
+        `../../public/tts-model/voices_kitten.json`
       );
       const voicesData = await voicesResponse.json();
 

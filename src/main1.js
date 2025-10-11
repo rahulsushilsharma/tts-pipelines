@@ -1,5 +1,5 @@
-import { PiperTTS, TextSplitterStream } from "./lib/piper-tts.js";
-
+import { PiperTTS } from "./lib/piper-tts.js";
+import { TextSplitterStream } from "./utils/utils.js";
 let tts = null;
 
 // Initialize the model
