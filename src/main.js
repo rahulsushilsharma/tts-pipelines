@@ -18,7 +18,7 @@ async function initializeModel(useWebGPU = false) {
     const model_path = `../public/tts-model/model_quantized.onnx`;
     tts = await KittenTTS.from_pretrained(model_path, {
       dtype: "q8",
-      device: "wasm",
+      device: "webgpu",
     });
 
     console.log({ status: "ready", voices: tts.voices, device });

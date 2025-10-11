@@ -168,13 +168,17 @@ function trimSilence(f32, thresh = 0.002, minSamples = 480) {
 async function main_() {
   await initializeModel(true);
 
-  await main({
-    data: {
-      text: "Kokoro is a frontier TTS model for its size of 82 million parameters",
+  const input = document.querySelector("#text");
+  const submit = document.querySelector("#generate");
 
-      voice: 0,
-      speed: 1.0,
-    },
+  submit.addEventListener("click", () => {
+    main({
+      data: {
+        text: input.value,
+        voice: 0,
+        speed: 1.0,
+      },
+    });
   });
 }
 
