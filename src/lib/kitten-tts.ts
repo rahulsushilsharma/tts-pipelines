@@ -48,7 +48,6 @@ export class KittenTTS {
       const { cachedFetch } = await import("../utils/model-cache.js");
 
       // Use local files in public directory with threading enabled
-      ort.env.wasm.wasmPaths = `../../public/onnx-runtime/`;
 
       // Load model using cached fetch
       const modelResponse = await cachedFetch(model_path);

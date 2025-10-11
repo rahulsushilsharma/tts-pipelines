@@ -1,7 +1,7 @@
 {
   "name": "tts-pipelines",
-  "version": "0.0.1-a3",
-  "description": "tts pipelines for non supporting onnx models",
+  "version": "0.0.1-a4",
+  "description": "TTS pipelines for non-supported ONNX models",
   "type": "module",
   "exports": {
     ".": {
@@ -10,7 +10,7 @@
       "types": "./lib/esm/types/index.d.ts"
     }
   },
-  "types": "./lib/cjs/types/index.d.ts",
+  "types": "./lib/esm/types/index.d.ts",
   "main": "./lib/cjs/index.js",
   "files": [
     "lib/**/*",
@@ -33,7 +33,7 @@
   "keywords": [
     "onnx",
     "tts",
-    "text-to-speach",
+    "text-to-speech",
     "machine-learning"
   ],
   "homepage": "https://github.com/rahulsushilsharma/tts-pipelines#readme",
@@ -46,11 +46,14 @@
   },
   "license": "ISC",
   "author": "Rahul Sharma <rahu8299@gmail.com>",
+  "peerDependencies": {
+    "onnxruntime-web": "^1.23.0"
+  },
+  "optionalDependencies": {
+    "onnxruntime-node": "^1.23.0"
+  },
   "dependencies": {
-    "onnxruntime-node": "^1.23.0",
-    "onnxruntime-web": "^1.23.0",
-    "phonemizer": "^1.2.1",
-    "tts-pipelines": "0.0.1-a1"
+    "phonemizer": "^1.2.1"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
