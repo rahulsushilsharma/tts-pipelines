@@ -1,21 +1,50 @@
 /* eslint-disable no-undef */
 
-import { phonemize } from "https://cdn.jsdelivr.net/npm/phonemizer";
+import { InferenceSession } from "onnxruntime-web";
 import { RawAudio } from "../utils/utils.js";
 
 // KittenTTS class for local model
+
 export class KittenTTS {
-  constructor(voices, session, voiceEmbeddings) {
+  voices: { id: string; name: string }[];
+  session: InferenceSession | null;
+  voiceEmbeddings: { [key: string]: any };
+  wasmSession: InferenceSession | null;
+  tokenizer: any;
+  vocab: any;
+  vocabArray: string[];
+
+  constructor(
+    voices: { id: string; name: string }[] | undefined,
+    session: InferenceSession | null,
+    voiceEmbeddings: { [key: string]: any } | undefined
+  ) {
     this.voices = voices || [];
     this.session = session;
     this.voiceEmbeddings = voiceEmbeddings || {};
-    this.wasmSession = null; // Fallback WASM session
+    this.wasmSession = null; // Fallback WASM session\
+    this.vocab = {};
+    this.vocabArray = [];
   }
 
-  static async from_pretrained(model_path, options = {}) {
+  static async from_pretrained(
+    model_path:
+      | string
+      | number
+      | ArrayBuffer
+      | ArrayBufferView<ArrayBuffer>
+      | Date
+      | IDBValidKey[]
+      | IDBKeyRange
+      | Request
+      | URL,
+    options: {
+      device?: "webgpu" | "wasm";
+    } = {}
+  ) {
     try {
       // Import ONNX Runtime Web and caching utility
-      const ort = await import("../../public/onnx-runtime/ort.bundle.min.mjs");
+      const ort = await import("onnxruntime-web");
       const { cachedFetch } = await import("../utils/model-cache.js");
 
       // Use local files in public directory with threading enabled
@@ -26,7 +55,7 @@ export class KittenTTS {
       const modelBuffer = await modelResponse.bytes();
 
       // Try WebGPU with better configuration, fallback to WASM
-      let session;
+      let session: InferenceSession | null = null;
       try {
         if (options.device === "webgpu") {
           // Try WebGPU with specific settings for better compatibility
@@ -48,11 +77,11 @@ export class KittenTTS {
         }
       } catch (webgpuError) {
         // Fallback to WASM with explicit configuration
+
         session = await ort.InferenceSession.create(modelBuffer, {
           executionProviders: [
             {
               name: "wasm",
-              simd: true,
             },
           ],
         });
@@ -79,7 +108,7 @@ export class KittenTTS {
     } catch (error) {
       console.error("Error loading local model:", error);
       // Fallback to default voices without model
-      return new KittenTTS();
+      return new KittenTTS([], null, {});
     }
   }
 
@@ -99,7 +128,7 @@ export class KittenTTS {
 
         // Create reverse mapping
         for (const [char, id] of Object.entries(this.vocab)) {
-          this.vocabArray[id] = char;
+          this.vocabArray[id as number] = char;
         }
 
         this.tokenizer = tokenizerData;
@@ -112,14 +141,14 @@ export class KittenTTS {
   }
 
   // Convert text to phonemes using the phonemizer package
-  async textToPhonemes(text) {
+  async textToPhonemes(text: any) {
     // Import the phonemizer package
-
+    const { phonemize } = await import("phonemizer");
     return await phonemize(text, "en-us");
   }
 
   // Tokenize text using the loaded tokenizer
-  async tokenizeText(text) {
+  async tokenizeText(text: any) {
     await this.loadTokenizer();
 
     const phonemes = await this.textToPhonemes(text);
@@ -138,7 +167,10 @@ export class KittenTTS {
     return tokens;
   }
 
-  async *stream(textStreamer, options = {}) {
+  async *stream(
+    textStreamer: any,
+    options: { voice?: string; speed?: number } = {}
+  ) {
     const { voice = "expr-voice-2-m", speed = 1.0 } = options;
 
     // Process the text stream
@@ -179,16 +211,14 @@ export class KittenTTS {
               let audioData = audioOutput.data;
 
               // Check if WebGPU produced NaN values and fallback to WASM
-              if (audioData.length > 0 && isNaN(audioData[0])) {
+              if (audioData.length > 0 && isNaN(Number(audioData[0]))) {
                 // Create WASM session if we don't have one
                 if (!this.wasmSession) {
                   const ort = await import(
                     "../../public/onnx-runtime/ort.bundle.min.mjs"
                   );
                   this.wasmSession = await ort.InferenceSession.create(
-                    `${
-                      import.meta.env.BASE_URL
-                    }tts-model/kitten_tts_nano_v0_1.onnx`,
+                    `../../public/tts-model/kitten_tts_nano_v0_1.onnx`,
                     {
                       executionProviders: ["wasm"],
                     }
@@ -196,6 +226,8 @@ export class KittenTTS {
                 }
 
                 // Retry inference with WASM
+                if (this.wasmSession == null)
+                  throw new Error("WASM session not created");
                 results = await this.wasmSession.run(inputs);
                 audioOutput = results.waveform;
                 audioData = audioOutput.data;
@@ -213,15 +245,18 @@ export class KittenTTS {
               }
 
               // Apply speed adjustment
-              let finalAudioData = new Float32Array(audioData);
+              let finalAudioData = new Float32Array(
+                Array.from(audioData as ArrayLike<number>)
+              );
               if (speed !== 1.0) {
                 // Simple time-stretching by resampling
                 const newLength = Math.floor(audioData.length / speed);
                 finalAudioData = new Float32Array(newLength);
                 for (let i = 0; i < newLength; i++) {
                   const srcIndex = Math.floor(i * speed);
-                  finalAudioData[i] =
-                    audioData[Math.min(srcIndex, audioData.length - 1)];
+                  finalAudioData[i] = Number(
+                    audioData[Math.min(srcIndex, audioData.length - 1)]
+                  );
                 }
               }
 
@@ -255,7 +290,16 @@ export class KittenTTS {
               };
             } catch (modelError) {
               console.error("Model inference error:", modelError);
-              console.error("Error details:", modelError.message);
+              if (
+                typeof modelError === "object" &&
+                modelError !== null &&
+                "message" in modelError
+              ) {
+                console.error(
+                  "Error details:",
+                  (modelError as { message?: string }).message
+                );
+              }
             }
           }
         } catch (error) {
