@@ -1,6 +1,6 @@
 {
   "name": "tts-pipelines",
-  "version": "0.0.1",
+  "version": "0.0.1-a",
   "description": "tts pipelines for non supporting onnx models",
   "exports": {
     ".": {
