@@ -1,4 +1,5 @@
 /// <reference types="@webgpu/types" />
+import { chunkText, cleanTextForTTS } from "../utils/text-cleaner.js";
 
 export async function detectWebGPU() {
   try {
