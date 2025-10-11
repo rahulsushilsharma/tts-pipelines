@@ -57,5 +57,8 @@
     "onlyBuiltDependencies": [
       "onnxruntime-node"
     ]
+  },
+  "devDependencies": {
+    "@webgpu/types": "^0.1.65"
   }
 }

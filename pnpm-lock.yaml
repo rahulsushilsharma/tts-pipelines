@@ -14,6 +14,10 @@ importers:
       onnxruntime-web:
         specifier: ^1.23.0
         version: 1.23.0
+    devDependencies:
+      '@webgpu/types':
+        specifier: ^0.1.65
+        version: 0.1.65
 
 packages:
 
@@ -49,6 +53,9 @@ packages:
 
   '@types/node@24.7.1':
     resolution: {integrity: sha512-CmyhGZanP88uuC5GpWU9q+fI61j2SkhO3UGMUdfYRE6Bcy0ccyzn1Rqj9YAB/ZY4kOXmNf0ocah5GtphmLMP6Q==}
+
+  '@webgpu/types@0.1.65':
+    resolution: {integrity: sha512-cYrHab4d6wuVvDW5tdsfI6/o6vcLMDe6w2Citd1oS51Xxu2ycLCnVo4fqwujfKWijrZMInTJIKcXxteoy21nVA==}
 
   adm-zip@0.5.16:
     resolution: {integrity: sha512-TGw5yVi4saajsSEgz25grObGHEUaDrniwvA2qwSC060KfqGPdglhvPMA2lPIoxs3PQIItj2iag35fONcQqgUaQ==}
@@ -190,6 +197,8 @@ snapshots:
   '@types/node@24.7.1':
     dependencies:
       undici-types: 7.14.0
+
+  '@webgpu/types@0.1.65': {}
 
   adm-zip@0.5.16: {}
 
