@@ -17,6 +17,9 @@ importers:
       phonemizer:
         specifier: ^1.2.1
         version: 1.2.1
+      tts-pipelines:
+        specifier: 0.0.1-a1
+        version: 0.0.1-a1
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -2773,6 +2776,9 @@ packages:
         optional: true
       jest-util:
         optional: true
+
+  tts-pipelines@0.0.1-a1:
+    resolution: {integrity: sha512-XgPUnKskuOXbFt2+nZisSkBFNT/DFA1P1dNiR+1i5vBUR1Tv+2zG8iZLEZqaiUlzoBKlUFIMMJe9zbFv4fAMfg==}
 
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
@@ -5944,6 +5950,12 @@ snapshots:
       '@jest/types': 29.6.3
       babel-jest: 29.7.0(@babel/core@7.28.4)
       jest-util: 29.7.0
+
+  tts-pipelines@0.0.1-a1:
+    dependencies:
+      onnxruntime-node: 1.23.0
+      onnxruntime-web: 1.23.0
+      phonemizer: 1.2.1
 
   type-check@0.4.0:
     dependencies:
