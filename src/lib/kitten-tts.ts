@@ -186,9 +186,7 @@ export class KittenTTS {
               const speakerEmbedding = new Float32Array(
                 this.voiceEmbeddings[voice][0]
               );
-              const ort = await import(
-                "../../public/onnx-runtime/ort.bundle.min.mjs"
-              );
+              const ort = await import("onnxruntime-web");
 
               const inputs = {
                 input_ids: new ort.Tensor("int64", inputIds, [
@@ -214,9 +212,7 @@ export class KittenTTS {
               if (audioData.length > 0 && isNaN(Number(audioData[0]))) {
                 // Create WASM session if we don't have one
                 if (!this.wasmSession) {
-                  const ort = await import(
-                    "../../public/onnx-runtime/ort.bundle.min.mjs"
-                  );
+                  const ort = await import("onnxruntime-web");
                   this.wasmSession = await ort.InferenceSession.create(
                     `../../public/tts-model/kitten_tts_nano_v0_1.onnx`,
                     {
