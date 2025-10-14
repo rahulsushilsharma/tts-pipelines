@@ -43,12 +43,15 @@ export class KittenTTS {
     } = {}
   ) {
     try {
+      alert("Loading local model...");
+
       // Import ONNX Runtime Web and caching utility
       const ort = await import("onnxruntime-web");
       const { cachedFetch } = await import("../utils/model-cache.js");
 
       // Use local files in public directory with threading enabled
 
+      ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/`;
       // Load model using cached fetch
       const modelResponse = await cachedFetch(model_path);
       const modelBuffer = await modelResponse.bytes();
@@ -88,7 +91,7 @@ export class KittenTTS {
 
       // Load voices from the local voices.json file (also cached)
       const voicesResponse = await cachedFetch(
-        `../../public/tts-model/voices_kitten.json`
+        `https://raw.githubusercontent.com/rahulsushilsharma/tts-pipelines/refs/heads/main/public/tts-model/voices_kitten.json`
       );
       const voicesData = await voicesResponse.json();
 
@@ -117,7 +120,7 @@ export class KittenTTS {
       try {
         const { cachedFetch } = await import("../utils/model-cache.js");
         const response = await cachedFetch(
-          `../../public/tts-model/tokenizer.json`
+          `https://raw.githubusercontent.com/rahulsushilsharma/tts-pipelines/refs/heads/main/public/tts-model/tokenizer.json`
         );
         const tokenizerData = await response.json();
 
@@ -143,7 +146,9 @@ export class KittenTTS {
   async textToPhonemes(text: any) {
     // Import the phonemizer package
     const { phonemize } = await import("phonemizer");
-    return await phonemize(text, "en-us");
+    const phonemes = await phonemize(text, "en-us");
+    console.log("Phonemes:", phonemes);
+    return phonemes;
   }
 
   // Tokenize text using the loaded tokenizer
@@ -213,7 +218,7 @@ export class KittenTTS {
                 if (!this.wasmSession) {
                   const ort = await import("onnxruntime-web");
                   this.wasmSession = await ort.InferenceSession.create(
-                    `../../public/tts-model/kitten_tts_nano_v0_1.onnx`,
+                    `https://huggingface.co/onnx-community/kitten-tts-nano-0.1-ONNX/resolve/main/onnx/model_quantized.onnx`,
                     {
                       executionProviders: ["wasm"],
                     }
