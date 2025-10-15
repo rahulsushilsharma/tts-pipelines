@@ -71,8 +71,7 @@ export class KittenTTS {
               "wasm", // Keep WASM as fallback
             ],
             // Global session options that might help with precision
-            graphOptimizationLevel: "basic", // Less aggressive optimization
-            enableProfiling: false,
+            enableProfiling: true,
           });
         } else {
           throw new Error("Using WASM as requested");
