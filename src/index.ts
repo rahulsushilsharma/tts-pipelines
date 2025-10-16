@@ -1,4 +1,5 @@
 import { KittenTTS } from "./lib/kitten-tts.js";
+import { PiperTTS } from "./lib/piper-tts.js";
 import { chunkText, cleanTextForTTS } from "./utils/text-cleaner.js";
 import { detectWebGPU, TextSplitterStream } from "./utils/utils.js";
 export {
@@ -6,5 +7,6 @@ export {
   cleanTextForTTS,
   detectWebGPU,
   KittenTTS,
+  PiperTTS,
   TextSplitterStream,
 };
