@@ -1,23 +1,29 @@
 name: Release
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+
 jobs:
-  release:
-    name: Release
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        node-version: [20]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: "22"
+          version: 10
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
       - name: Install dependencies
-        run: npm install
+        run: pnpm install
       - name: Build dependencies
-        run: npm run build
-  
+        run: pnpm run build
 
       - name: Publish
         uses: JS-DevTools/npm-publish@v2
