@@ -1,17 +1,16 @@
 {
   "name": "tts-pipelines",
-  "version": "0.0.2-a",
+  "version": "0.0.3-a",
   "description": "TTS pipelines for non-supported ONNX models",
   "type": "module",
   "exports": {
     ".": {
       "import": "./lib/esm/index.mjs",
-      "require": "./lib/cjs/index.js",
       "types": "./lib/esm/types/index.d.ts"
     }
   },
   "types": "./lib/esm/types/index.d.ts",
-  "main": "./lib/cjs/index.js",
+  "main": "./lib/esm/index.mjs",
   "files": [
     "lib/**/*",
     "public/**/*",
@@ -22,10 +21,7 @@
     "clean": "del-cli ./lib",
     "build": "npm run clean && npm run build:esm",
     "build:esm": "tsc -p ./config/tsconfig.esm.json && move-file lib/esm/index.js lib/esm/index.mjs",
-    "build:cjs": "tsc -p ./config/tsconfig.cjs.json",
     "prepack": "npm run build",
-    "clean:docs": "npm run clean && del-cli package-lock.json",
-    "doc": "jsdoc2md ./lib/esm/login.js >> ./docs/login.md && jsdoc2md ./lib/esm/chat.js >> ./docs/chat.md",
     "test": "jest",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write src/**/*.{ts,js}"
@@ -47,14 +43,19 @@
   "license": "ISC",
   "author": "Rahul Sharma <rahu8299@gmail.com>",
   "peerDependencies": {
-    "onnxruntime-web": "^1.23.0"
-  },
-  "optionalDependencies": {
+    "onnxruntime-web": "^1.23.0",
     "onnxruntime-node": "^1.23.0"
   },
+  "peerDependenciesMeta": {
+    "onnxruntime-web": {
+      "optional": true
+    },
+    "onnxruntime-node": {
+      "optional": true
+    }
+  },
   "dependencies": {
-    "phonemizer": "^1.2.1",
-    "tts-pipelines": "0.0.1-a4"
+    "phonemizer": "^1.2.1"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

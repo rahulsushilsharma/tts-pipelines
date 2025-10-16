@@ -18,4 +18,5 @@ export declare class RawAudio {
     writeString(view: DataView<ArrayBuffer>, offset: number, string: string): void;
     floatTo16BitPCM(output: DataView<ArrayBuffer>, offset: number, input: string | any[]): void;
 }
+export declare function loadONNXRuntime(): Promise<any>;
 //# sourceMappingURL=utils.d.ts.map

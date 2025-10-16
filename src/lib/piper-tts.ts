@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import { InferenceSession } from "onnxruntime-web";
 import { phonemize } from "phonemizer";
-import { RawAudio } from "../utils/utils.js";
+import { loadONNXRuntime, RawAudio } from "../utils/utils.js";
 // Piper TTS class for local model
 export class PiperTTS {
   voiceConfig: any;
@@ -37,7 +37,7 @@ export class PiperTTS {
   ) {
     try {
       // Import ONNX Runtime Web and caching utility
-      const ort = await import("onnxruntime-web");
+      const ort = await loadONNXRuntime();
       const { cachedFetch } = await import("../utils/model-cache.js");
 
       // Use local files in public directory with threading enabled
@@ -176,7 +176,7 @@ export class PiperTTS {
             const phonemeIds = this.phonemesToIds(textPhonemes);
 
             // Prepare tensors for Piper model
-            const ort = await import("onnxruntime-web");
+            const ort = await loadONNXRuntime();
 
             const inputs: { [key: string]: any } = {
               input: new ort.Tensor(

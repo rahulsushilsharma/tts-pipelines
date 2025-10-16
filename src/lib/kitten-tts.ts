@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 
 import { InferenceSession } from "onnxruntime-web";
-import { RawAudio } from "../utils/utils.js";
+import { loadONNXRuntime, RawAudio } from "../utils/utils.js";
 
 // KittenTTS class for local model
 
@@ -46,7 +46,7 @@ export class KittenTTS {
       alert("Loading local model...");
 
       // Import ONNX Runtime Web and caching utility
-      const ort = await import("onnxruntime-web");
+      const ort = await loadONNXRuntime();
       const { cachedFetch } = await import("../utils/model-cache.js");
 
       // Use local files in public directory with threading enabled
@@ -189,7 +189,7 @@ export class KittenTTS {
               const speakerEmbedding = new Float32Array(
                 this.voiceEmbeddings[voice][0]
               );
-              const ort = await import("onnxruntime-web");
+              const ort = await loadONNXRuntime();
 
               const inputs = {
                 input_ids: new ort.Tensor("int64", inputIds, [
@@ -215,7 +215,7 @@ export class KittenTTS {
               if (audioData.length > 0 && isNaN(Number(audioData[0]))) {
                 // Create WASM session if we don't have one
                 if (!this.wasmSession) {
-                  const ort = await import("onnxruntime-web");
+                  const ort = await loadONNXRuntime();
                   this.wasmSession = await ort.InferenceSession.create(
                     `https://huggingface.co/onnx-community/kitten-tts-nano-0.1-ONNX/resolve/main/onnx/model_quantized.onnx`,
                     {
