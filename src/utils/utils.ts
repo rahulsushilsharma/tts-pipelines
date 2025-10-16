@@ -126,9 +126,9 @@ export async function loadONNXRuntime() {
       return ort;
     } else {
       // Node environment: prevent bundlers from touching .node bindings
-      const nodeImport = new Function("return import('onnxruntime-node')");
+      const nodeImport = new Function("return ");
       const ort = await nodeImport();
-      return ort;
+      return ort as typeof import("onnxruntime-node");
     }
   } catch (error) {
     const target = isBrowser ? "onnxruntime-web" : "onnxruntime-node";

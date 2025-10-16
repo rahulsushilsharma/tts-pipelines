@@ -13,6 +13,11 @@ export class KittenTTS {
   tokenizer: any;
   vocab: any;
   vocabArray: string[];
+  static voices_path: string = `https://raw.githubusercontent.com/rahulsushilsharma/tts-pipelines/refs/heads/main/public/tts-model/voices_kitten.json`;
+  static model_path: string =
+    "https://huggingface.co/onnx-community/kitten-tts-nano-0.1-ONNX/resolve/main/onnx/model_quantized.onnx";
+  static tokenizer_path: string =
+    "https://raw.githubusercontent.com/rahulsushilsharma/tts-pipelines/refs/heads/main/public/tts-model/tokenizer.json";
 
   constructor(
     voices: { id: string; name: string }[] | undefined,
@@ -28,7 +33,27 @@ export class KittenTTS {
   }
 
   static async from_pretrained(
-    model_path:
+    model_path?:
+      | string
+      | number
+      | ArrayBuffer
+      | ArrayBufferView<ArrayBuffer>
+      | Date
+      | IDBValidKey[]
+      | IDBKeyRange
+      | Request
+      | URL,
+    voices_path?:
+      | string
+      | number
+      | ArrayBuffer
+      | ArrayBufferView<ArrayBuffer>
+      | Date
+      | IDBValidKey[]
+      | IDBKeyRange
+      | Request
+      | URL,
+    tokenizer_path?:
       | string
       | number
       | ArrayBuffer
@@ -43,15 +68,22 @@ export class KittenTTS {
     } = {}
   ) {
     try {
-      alert("Loading local model...");
-
       // Import ONNX Runtime Web and caching utility
+      if (!model_path) {
+        model_path = this.model_path;
+      }
+      if (!voices_path) {
+        voices_path = this.voices_path;
+      }
+      if (!tokenizer_path) {
+        tokenizer_path = this.tokenizer_path;
+      }
       const ort = await loadONNXRuntime();
       const { cachedFetch } = await import("../utils/model-cache.js");
 
       // Use local files in public directory with threading enabled
-
       ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/`;
+
       // Load model using cached fetch
       const modelResponse = await cachedFetch(model_path);
       const modelBuffer = await modelResponse.bytes();
@@ -89,9 +121,7 @@ export class KittenTTS {
       }
 
       // Load voices from the local voices.json file (also cached)
-      const voicesResponse = await cachedFetch(
-        `https://raw.githubusercontent.com/rahulsushilsharma/tts-pipelines/refs/heads/main/public/tts-model/voices_kitten.json`
-      );
+      const voicesResponse = await cachedFetch(this.voices_path);
       const voicesData = await voicesResponse.json();
 
       // Transform the voices data into the format we need
@@ -118,9 +148,7 @@ export class KittenTTS {
     if (!this.tokenizer) {
       try {
         const { cachedFetch } = await import("../utils/model-cache.js");
-        const response = await cachedFetch(
-          `https://raw.githubusercontent.com/rahulsushilsharma/tts-pipelines/refs/heads/main/public/tts-model/tokenizer.json`
-        );
+        const response = await cachedFetch(KittenTTS.tokenizer_path);
         const tokenizerData = await response.json();
 
         // Extract the actual vocabulary from the tokenizer
@@ -217,7 +245,7 @@ export class KittenTTS {
                 if (!this.wasmSession) {
                   const ort = await loadONNXRuntime();
                   this.wasmSession = await ort.InferenceSession.create(
-                    `https://huggingface.co/onnx-community/kitten-tts-nano-0.1-ONNX/resolve/main/onnx/model_quantized.onnx`,
+                    KittenTTS.model_path,
                     {
                       executionProviders: ["wasm"],
                     }

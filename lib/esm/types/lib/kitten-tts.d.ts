@@ -13,13 +13,16 @@ export declare class KittenTTS {
     tokenizer: any;
     vocab: any;
     vocabArray: string[];
+    static voices_path: string;
+    static model_path: string;
+    static tokenizer_path: string;
     constructor(voices: {
         id: string;
         name: string;
     }[] | undefined, session: InferenceSession | null, voiceEmbeddings: {
         [key: string]: any;
     } | undefined);
-    static from_pretrained(model_path: string | number | ArrayBuffer | ArrayBufferView<ArrayBuffer> | Date | IDBValidKey[] | IDBKeyRange | Request | URL, options?: {
+    static from_pretrained(model_path?: string | number | ArrayBuffer | ArrayBufferView<ArrayBuffer> | Date | IDBValidKey[] | IDBKeyRange | Request | URL, voices_path?: string | number | ArrayBuffer | ArrayBufferView<ArrayBuffer> | Date | IDBValidKey[] | IDBKeyRange | Request | URL, tokenizer_path?: string | number | ArrayBuffer | ArrayBufferView<ArrayBuffer> | Date | IDBValidKey[] | IDBKeyRange | Request | URL, options?: {
         device?: "webgpu" | "wasm";
     }): Promise<KittenTTS>;
     loadTokenizer(): Promise<void>;

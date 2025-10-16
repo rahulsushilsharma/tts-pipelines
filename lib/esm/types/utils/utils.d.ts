@@ -18,5 +18,16 @@ export declare class RawAudio {
     writeString(view: DataView<ArrayBuffer>, offset: number, string: string): void;
     floatTo16BitPCM(output: DataView<ArrayBuffer>, offset: number, input: string | any[]): void;
 }
-export declare function loadONNXRuntime(): Promise<any>;
+export declare function loadONNXRuntime(): Promise<{
+    default: typeof import("onnxruntime-web");
+    registerBackend: (name: string, backend: import("onnxruntime-web").Backend, priority: number) => void;
+    env: import("onnxruntime-web").Env;
+    InferenceSession: import("onnxruntime-web").InferenceSessionFactory;
+    Tensor: import("onnxruntime-web").TensorConstructor;
+    TRACE: (deviceType: string, label: string) => void;
+    TRACE_FUNC_BEGIN: (extraMsg?: string) => void;
+    TRACE_FUNC_END: (extraMsg?: string) => void;
+    TRACE_EVENT_BEGIN: (extraMsg?: string) => void;
+    TRACE_EVENT_END: (extraMsg?: string) => void;
+} | typeof import("onnxruntime-node")>;
 //# sourceMappingURL=utils.d.ts.map
