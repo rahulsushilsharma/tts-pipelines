@@ -1,6 +1,6 @@
 {
   "name": "tts-pipelines",
-  "version": "0.0.4-a",
+  "version": "0.1.0",
   "description": "TTS pipelines for non-supported ONNX models",
   "type": "module",
   "exports": {
@@ -13,7 +13,6 @@
   "main": "./lib/esm/index.mjs",
   "files": [
     "lib/**/*",
-    "public/**/*",
     "README.md",
     "LICENSE"
   ],
