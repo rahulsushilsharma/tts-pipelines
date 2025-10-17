@@ -1,40 +1,25 @@
 /* eslint-disable no-undef */
 import { InferenceSession } from "onnxruntime-web";
 import { phonemize } from "phonemizer";
-import { loadONNXRuntime, RawAudio } from "../utils/utils.js";
+import {
+  loadONNXRuntime,
+  normalizePeak,
+  RawAudio,
+  trimSilence,
+} from "../utils/utils.js";
 // Piper TTS class for local model
 export class PiperTTS {
   voiceConfig: any;
   session: InferenceSession | null;
   phonemeIdMap: null;
+  result_audio: { audio: RawAudio; text: string }[] = [];
   constructor(voiceConfig: null, session: InferenceSession | null) {
     this.voiceConfig = voiceConfig;
     this.session = session;
     this.phonemeIdMap = null;
   }
 
-  static async from_pretrained(
-    modelPath:
-      | string
-      | number
-      | Date
-      | ArrayBuffer
-      | ArrayBufferView<ArrayBuffer>
-      | IDBValidKey[]
-      | IDBKeyRange
-      | Request
-      | URL,
-    configPath:
-      | string
-      | number
-      | Date
-      | ArrayBuffer
-      | ArrayBufferView<ArrayBuffer>
-      | IDBValidKey[]
-      | IDBKeyRange
-      | Request
-      | URL
-  ) {
+  static async from_pretrained(modelPath: string, configPath: string) {
     try {
       // Import ONNX Runtime Web and caching utility
       const ort = await loadONNXRuntime();
@@ -60,6 +45,9 @@ export class PiperTTS {
           {
             name: "wasm",
           },
+
+          "cuda",
+          "cpu",
         ],
       });
 
@@ -70,7 +58,7 @@ export class PiperTTS {
     }
   }
 
-  // Convert text to phonemes using the phonemizer package
+  // Convert                                                                                                                                                           to phonemes using the phonemizer package
   async textToPhonemes(text: string) {
     if (this.voiceConfig.phoneme_type === "text") {
       // Text phonemes - just return normalized characters
@@ -219,19 +207,23 @@ export class PiperTTS {
             const finalAudioData = new Float32Array(
               Array.from(audioData as Float32Array)
             );
-
-            yield {
+            const result = {
               text,
               audio: new RawAudio(finalAudioData, sampleRate),
             };
+
+            this.result_audio.push(result);
+            yield result;
           }
         } catch (error) {
           console.error("Error generating audio:", error);
           // Yield silence in case of error
-          yield {
+          const result = {
             text,
             audio: new RawAudio(new Float32Array(22050), 22050),
           };
+          this.result_audio.push(result);
+          yield result;
         }
       }
     }
@@ -251,5 +243,51 @@ export class PiperTTS {
         name: `Voice ${Number(id) + 1}`,
         originalId,
       }));
+  }
+  merge_audio() {
+    let audio;
+    if (this.result_audio.length > 0) {
+      try {
+        const originalSamplingRate = this.result_audio[0].audio.sampling_rate;
+        const length = this.result_audio.reduce(
+          (sum, chunk) => sum + chunk.audio.length,
+          0
+        );
+        let waveform = new Float32Array(length);
+        let offset = 0;
+        for (const { audio } of this.result_audio) {
+          waveform.set(audio.audio, offset);
+          offset += audio.length;
+        }
+
+        // Normalize peaks & trim silence
+        normalizePeak(waveform, 0.9);
+        waveform = trimSilence(
+          waveform,
+          0.002,
+          Math.floor(originalSamplingRate * 0.02)
+        ) as Float32Array<ArrayBuffer>; // 20ms padding
+
+        // Create a new merged RawAudio with the original sample rate
+        // @ts-expect-error - So that we don't need to import RawAudio
+        audio = new chunks[0].constructor(waveform, originalSamplingRate);
+
+        return audio;
+      } catch (error) {
+        console.error("Error processing audio chunks:", error);
+        return null;
+      }
+    }
+  }
+
+  async close() {
+    if (this.session) {
+      await this.session.release();
+      this.session = null;
+    }
+  }
+
+  getAudio() {
+    return this.result_audio;
   }
 }

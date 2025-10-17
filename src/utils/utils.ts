@@ -115,10 +115,14 @@ export class RawAudio {
   }
 }
 
+export function isBrowser() {
+  return (
+    typeof window !== "undefined" && typeof window.document !== "undefined"
+  );
+}
 export async function loadONNXRuntime() {
   const isBrowser =
     typeof window !== "undefined" && typeof window.document !== "undefined";
-
   try {
     if (isBrowser) {
       // Web environment: safe to import directly
@@ -126,7 +130,7 @@ export async function loadONNXRuntime() {
       return ort;
     } else {
       // Node environment: prevent bundlers from touching .node bindings
-      const nodeImport = new Function("return ");
+      const nodeImport = new Function("return import('onnxruntime-node')");
       const ort = await nodeImport();
       return ort as typeof import("onnxruntime-node");
     }
@@ -142,4 +146,28 @@ export async function loadONNXRuntime() {
     ].join("\n");
     throw new Error(message);
   }
+}
+
+export function normalizePeak(f32: Float32Array<ArrayBuffer>, target = 0.9) {
+  if (!f32?.length) return;
+  let max = 1e-9;
+  for (let i = 0; i < f32.length; i++) max = Math.max(max, Math.abs(f32[i]));
+  const g = Math.min(4, target / max);
+  if (g < 1) {
+    for (let i = 0; i < f32.length; i++) f32[i] *= g;
+  }
+}
+
+export function trimSilence(
+  f32: Float32Array<ArrayBuffer>,
+  thresh = 0.002,
+  minSamples = 480
+) {
+  let s = 0,
+    e = f32.length - 1;
+  while (s < e && Math.abs(f32[s]) < thresh) s++;
+  while (e > s && Math.abs(f32[e]) < thresh) e--;
+  s = Math.max(0, s - minSamples);
+  e = Math.min(f32.length, e + minSamples);
+  return f32.slice(s, e);
 }

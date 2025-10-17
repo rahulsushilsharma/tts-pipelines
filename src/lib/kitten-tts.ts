@@ -1,7 +1,12 @@
 /* eslint-disable no-undef */
 
 import { InferenceSession } from "onnxruntime-web";
-import { loadONNXRuntime, RawAudio } from "../utils/utils.js";
+import {
+  loadONNXRuntime,
+  normalizePeak,
+  RawAudio,
+  trimSilence,
+} from "../utils/utils.js";
 
 // KittenTTS class for local model
 
@@ -18,6 +23,7 @@ export class KittenTTS {
     "https://huggingface.co/onnx-community/kitten-tts-nano-0.1-ONNX/resolve/main/onnx/model_quantized.onnx";
   static tokenizer_path: string =
     "https://raw.githubusercontent.com/rahulsushilsharma/tts-pipelines/refs/heads/main/public/tts-model/tokenizer.json";
+  result_audio: any;
 
   constructor(
     voices: { id: string; name: string }[] | undefined,
@@ -33,36 +39,9 @@ export class KittenTTS {
   }
 
   static async from_pretrained(
-    model_path?:
-      | string
-      | number
-      | ArrayBuffer
-      | ArrayBufferView<ArrayBuffer>
-      | Date
-      | IDBValidKey[]
-      | IDBKeyRange
-      | Request
-      | URL,
-    voices_path?:
-      | string
-      | number
-      | ArrayBuffer
-      | ArrayBufferView<ArrayBuffer>
-      | Date
-      | IDBValidKey[]
-      | IDBKeyRange
-      | Request
-      | URL,
-    tokenizer_path?:
-      | string
-      | number
-      | ArrayBuffer
-      | ArrayBufferView<ArrayBuffer>
-      | Date
-      | IDBValidKey[]
-      | IDBKeyRange
-      | Request
-      | URL,
+    model_path?: string,
+    voices_path?: string,
+    tokenizer_path?: string,
     options: {
       device?: "webgpu" | "wasm";
     } = {}
@@ -101,6 +80,8 @@ export class KittenTTS {
                 // Try to improve precision for better audio quality
               },
               "wasm", // Keep WASM as fallback
+              "cuda",
+              "cpu",
             ],
             // Global session options that might help with precision
             enableProfiling: true,
@@ -116,6 +97,8 @@ export class KittenTTS {
             {
               name: "wasm",
             },
+            "cuda",
+            "cpu",
           ],
         });
       }
@@ -339,5 +322,53 @@ export class KittenTTS {
         }
       }
     }
+  }
+
+  merge_audio() {
+    let audio;
+    if (this.result_audio.length > 0) {
+      try {
+        const originalSamplingRate = this.result_audio[0].audio.sampling_rate;
+        const length = this.result_audio.reduce(
+          (sum: any, chunk: { audio: string | any[] }) =>
+            sum + chunk.audio.length,
+          0
+        );
+        let waveform = new Float32Array(length);
+        let offset = 0;
+        for (const { audio } of this.result_audio) {
+          waveform.set(audio.audio, offset);
+          offset += audio.length;
+        }
+
+        // Normalize peaks & trim silence
+        normalizePeak(waveform, 0.9);
+        waveform = trimSilence(
+          waveform,
+          0.002,
+          Math.floor(originalSamplingRate * 0.02)
+        ) as Float32Array<ArrayBuffer>; // 20ms padding
+
+        // Create a new merged RawAudio with the original sample rate
+        // @ts-expect-error - So that we don't need to import RawAudio
+        audio = new chunks[0].constructor(waveform, originalSamplingRate);
+
+        return audio;
+      } catch (error) {
+        console.error("Error processing audio chunks:", error);
+        return null;
+      }
+    }
+  }
+
+  async close() {
+    if (this.session) {
+      await this.session.release();
+      this.session = null;
+    }
+  }
+
+  getAudio() {
+    return this.result_audio;
   }
 }

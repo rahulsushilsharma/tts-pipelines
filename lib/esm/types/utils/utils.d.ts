@@ -30,4 +30,6 @@ export declare function loadONNXRuntime(): Promise<{
     TRACE_EVENT_BEGIN: (extraMsg?: string) => void;
     TRACE_EVENT_END: (extraMsg?: string) => void;
 } | typeof import("onnxruntime-node")>;
+export declare function normalizePeak(f32: Float32Array<ArrayBuffer>, target?: number): void;
+export declare function trimSilence(f32: Float32Array<ArrayBuffer>, thresh?: number, minSamples?: number): Float32Array<ArrayBuffer>;
 //# sourceMappingURL=utils.d.ts.map
