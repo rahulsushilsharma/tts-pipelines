@@ -1,7 +1,7 @@
 // cache.ts
 import fs from "fs";
 import path from "path";
-import { isBrowser } from "./utils";
+import { isBrowser } from "./utils.js";
 
 // ===================
 // Browser IndexedDB Cache
