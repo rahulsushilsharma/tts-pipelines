@@ -1,7 +1,7 @@
 {
   "name": "tts-pipelines",
-  "version": "0.1.0",
-  "description": "TTS pipelines for non-supported ONNX models",
+  "version": "0.2.0",
+  "description": "TTS pipelines for text to speech using Kitten TTS and Piper TTS",
   "type": "module",
   "exports": {
     ".": {
