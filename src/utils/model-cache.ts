@@ -1,6 +1,7 @@
 // cache.ts
 import fs from "fs";
 import path from "path";
+import { isBrowser } from "./utils";
 
 // ===================
 // Browser IndexedDB Cache
@@ -198,17 +199,14 @@ class NodeCache {
 // ===================
 // Unified Cached Fetch
 // ===================
-export async function cachedFetch(
-  url: string,
-  env: "browser" | "node" = typeof window === "undefined" ? "node" : "browser"
-): Promise<Response> {
-  const cache = env === "node" ? new NodeCache() : new ModelCache();
+export async function cachedFetch(url: string): Promise<Response> {
+  const cache = !isBrowser() ? new NodeCache() : new ModelCache();
 
   // Try cache first
   const cachedData = await cache.get(url);
   if (cachedData) {
     const headers = new Headers();
-    if (env === "node" && cache instanceof NodeCache) {
+    if (!isBrowser() && cache instanceof NodeCache) {
       const entry = cache.manifest[url];
       if (entry?.mimeType) headers.set("Content-Type", entry.mimeType);
     }
@@ -223,7 +221,7 @@ export async function cachedFetch(
   const mimeType =
     response.headers.get("Content-Type") || "application/octet-stream";
 
-  if (env === "node" && cache instanceof NodeCache) {
+  if (!isBrowser() && cache instanceof NodeCache) {
     await cache.set(url, data, mimeType);
   } else if (cache instanceof ModelCache) {
     await cache.set(url, data);
