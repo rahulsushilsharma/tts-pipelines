@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ES2022", "DOM"],
+     "lib": ["es2020", "dom", "webworker"],
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "nodenext",
