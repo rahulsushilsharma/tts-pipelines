@@ -23,7 +23,10 @@ export class KittenTTS {
     "https://huggingface.co/onnx-community/kitten-tts-nano-0.1-ONNX/resolve/main/onnx/model_quantized.onnx";
   static tokenizer_path: string =
     "https://raw.githubusercontent.com/rahulsushilsharma/tts-pipelines/refs/heads/main/public/tts-model/tokenizer.json";
-  result_audio: any;
+  result_audio: {
+    text: any;
+    audio: RawAudio;
+  }[] = [];
 
   constructor(
     voices: { id: string; name: string }[] | undefined,
@@ -294,10 +297,13 @@ export class KittenTTS {
                 }
               }
 
-              yield {
+              const result = {
                 text,
                 audio: new RawAudio(finalAudioData, sampleRate),
               };
+              this.result_audio.push(result);
+
+              yield result;
             } catch (modelError) {
               console.error("Model inference error:", modelError);
               if (
@@ -325,13 +331,12 @@ export class KittenTTS {
   }
 
   merge_audio() {
-    let audio;
+    let audio: RawAudio | null = null;
     if (this.result_audio.length > 0) {
       try {
         const originalSamplingRate = this.result_audio[0].audio.sampling_rate;
         const length = this.result_audio.reduce(
-          (sum: any, chunk: { audio: string | any[] }) =>
-            sum + chunk.audio.length,
+          (sum, chunk) => sum + chunk.audio.length,
           0
         );
         let waveform = new Float32Array(length);
@@ -350,8 +355,7 @@ export class KittenTTS {
         ) as Float32Array<ArrayBuffer>; // 20ms padding
 
         // Create a new merged RawAudio with the original sample rate
-        // @ts-expect-error - So that we don't need to import RawAudio
-        audio = new chunks[0].constructor(waveform, originalSamplingRate);
+        audio = new RawAudio(waveform, originalSamplingRate);
 
         return audio;
       } catch (error) {

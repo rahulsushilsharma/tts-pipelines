@@ -1,4 +1,5 @@
 /// <reference types="@webgpu/types" />
+import { writeFile } from "fs/promises";
 import { chunkText, cleanTextForTTS } from "./text-cleaner.js";
 
 export async function detectWebGPU() {
@@ -170,4 +171,15 @@ export function trimSilence(
   s = Math.max(0, s - minSamples);
   e = Math.min(f32.length, e + minSamples);
   return f32.slice(s, e);
+}
+export async function saveAudio(blob: Blob, path = "./output.wav") {
+  if (isBrowser()) {
+    throw new Error("saveAudio is not supported in browser");
+  }
+  if (!blob) {
+    throw new Error("blob is required");
+  }
+  const buffer = Buffer.from(await blob.arrayBuffer());
+  await writeFile(path, buffer);
+  console.log("Audio saved to", path);
 }

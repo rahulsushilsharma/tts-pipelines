@@ -16,7 +16,10 @@ export declare class KittenTTS {
     static voices_path: string;
     static model_path: string;
     static tokenizer_path: string;
-    result_audio: any;
+    result_audio: {
+        text: any;
+        audio: RawAudio;
+    }[];
     constructor(voices: {
         id: string;
         name: string;
@@ -36,8 +39,11 @@ export declare class KittenTTS {
         text: any;
         audio: RawAudio;
     }, void, unknown>;
-    merge_audio(): any;
+    merge_audio(): RawAudio | null | undefined;
     close(): Promise<void>;
-    getAudio(): any;
+    getAudio(): {
+        text: any;
+        audio: RawAudio;
+    }[];
 }
 //# sourceMappingURL=kitten-tts.d.ts.map

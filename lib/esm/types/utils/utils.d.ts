@@ -18,6 +18,7 @@ export declare class RawAudio {
     writeString(view: DataView<ArrayBuffer>, offset: number, string: string): void;
     floatTo16BitPCM(output: DataView<ArrayBuffer>, offset: number, input: string | any[]): void;
 }
+export declare function isBrowser(): boolean;
 export declare function loadONNXRuntime(): Promise<{
     default: typeof import("onnxruntime-web");
     registerBackend: (name: string, backend: import("onnxruntime-web").Backend, priority: number) => void;
@@ -32,4 +33,5 @@ export declare function loadONNXRuntime(): Promise<{
 } | typeof import("onnxruntime-node")>;
 export declare function normalizePeak(f32: Float32Array<ArrayBuffer>, target?: number): void;
 export declare function trimSilence(f32: Float32Array<ArrayBuffer>, thresh?: number, minSamples?: number): Float32Array<ArrayBuffer>;
+export declare function saveAudio(blob: Blob, path?: string): Promise<void>;
 //# sourceMappingURL=utils.d.ts.map

@@ -13,15 +13,23 @@ export class PiperTTS {
   session: InferenceSession | null;
   phonemeIdMap: null;
   result_audio: { audio: RawAudio; text: string }[] = [];
+  static modelPath = `https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/amy/medium/en_US-amy-medium.onnx`;
+  static configPath = `https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/amy/medium/en_US-amy-medium.onnx.json`;
   constructor(voiceConfig: null, session: InferenceSession | null) {
     this.voiceConfig = voiceConfig;
     this.session = session;
     this.phonemeIdMap = null;
   }
 
-  static async from_pretrained(modelPath: string, configPath: string) {
+  static async from_pretrained(modelPath?: string, configPath?: string) {
     try {
       // Import ONNX Runtime Web and caching utility
+      if (!modelPath) {
+        modelPath = this.modelPath;
+      }
+      if (!configPath) {
+        configPath = this.configPath;
+      }
       const ort = await loadONNXRuntime();
       const { cachedFetch } = await import("../utils/model-cache.js");
 
@@ -245,7 +253,7 @@ export class PiperTTS {
       }));
   }
   merge_audio() {
-    let audio;
+    let audio: RawAudio | null = null;
     if (this.result_audio.length > 0) {
       try {
         const originalSamplingRate = this.result_audio[0].audio.sampling_rate;
@@ -269,8 +277,7 @@ export class PiperTTS {
         ) as Float32Array<ArrayBuffer>; // 20ms padding
 
         // Create a new merged RawAudio with the original sample rate
-        // @ts-expect-error - So that we don't need to import RawAudio
-        audio = new chunks[0].constructor(waveform, originalSamplingRate);
+        audio = new RawAudio(waveform, originalSamplingRate);
 
         return audio;
       } catch (error) {
