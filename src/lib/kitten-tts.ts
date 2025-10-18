@@ -375,4 +375,7 @@ export class KittenTTS {
   getAudio() {
     return this.result_audio;
   }
+  clearAudio() {
+    this.result_audio = [];
+  }
 }
