@@ -134,3 +134,6 @@ dist
 test/
 cache/
 test_package/
+lib
+original
+public
