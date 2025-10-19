@@ -1,5 +1,4 @@
 /// <reference types="@webgpu/types" />
-import { writeFile } from "fs/promises";
 import { chunkText, cleanTextForTTS } from "./text-cleaner.js";
 
 export async function detectWebGPU() {
@@ -178,6 +177,8 @@ export async function saveAudio(blob: Blob, path = "./output.wav") {
   if (!blob) {
     throw new Error("blob is required");
   }
+  const func = new Function("return import('fs/promises')");
+  const { writeFile } = (await func()) as typeof import("fs/promises");
   const buffer = Buffer.from(await blob.arrayBuffer());
   await writeFile(path, buffer);
   console.log("Audio saved to", path);
