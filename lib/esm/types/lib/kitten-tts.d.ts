@@ -45,5 +45,6 @@ export declare class KittenTTS {
         text: any;
         audio: RawAudio;
     }[];
+    clearAudio(): void;
 }
 //# sourceMappingURL=kitten-tts.d.ts.map

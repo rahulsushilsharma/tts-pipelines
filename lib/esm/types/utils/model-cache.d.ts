@@ -28,6 +28,6 @@ declare class NodeCache {
     set(url: string, data: ArrayBuffer, mimeType?: string): Promise<void>;
     getLocalPath(url: string): string | null;
 }
-export declare function cachedFetch(url: string, env?: "browser" | "node"): Promise<Response>;
+export declare function cachedFetch(url: string): Promise<Response>;
 export { ModelCache, NodeCache };
 //# sourceMappingURL=model-cache.d.ts.map

@@ -37,5 +37,6 @@ export declare class PiperTTS {
         audio: RawAudio;
         text: string;
     }[];
+    clearAudio(): void;
 }
 //# sourceMappingURL=piper-tts.d.ts.map

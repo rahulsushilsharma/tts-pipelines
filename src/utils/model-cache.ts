@@ -97,8 +97,13 @@ class NodeCache {
   maxAge: number;
 
   constructor(baseDir = ".cache/kitten-tts") {
-    const path = require("path");
-    const fs = require("fs");
+    const path = new Function(
+      "return require('path')"
+    ) as unknown as typeof import("path");
+    const fs = new Function(
+      "return require('fs')"
+    ) as unknown as typeof import("fs");
+
     this.baseDir = path.resolve(baseDir);
     this.manifestPath = path.join(this.baseDir, "cache-manifest.json");
     this.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -109,7 +114,9 @@ class NodeCache {
   }
 
   private _loadManifest(): Record<string, CacheEntry> {
-    const fs = require("fs");
+    const fs = new Function(
+      "return require('fs')"
+    ) as unknown as typeof import("fs");
 
     try {
       if (fs.existsSync(this.manifestPath)) {
@@ -122,7 +129,9 @@ class NodeCache {
   }
 
   private _saveManifest() {
-    const fs = require("fs");
+    const fs = new Function(
+      "return require('fs')"
+    ) as unknown as typeof import("fs");
 
     fs.writeFileSync(this.manifestPath, JSON.stringify(this.manifest, null, 2));
   }
@@ -153,7 +162,9 @@ class NodeCache {
   }
 
   async get(url: string): Promise<ArrayBuffer | null> {
-    const fs = require("fs");
+    const fs = new Function(
+      "return require('fs')"
+    ) as unknown as typeof import("fs");
 
     const entry = this.manifest[url];
     if (!entry) return null;
@@ -184,8 +195,14 @@ class NodeCache {
     data: ArrayBuffer,
     mimeType = "application/octet-stream"
   ) {
-    const path = require("path");
-    const fs = require("fs");
+    const path = new Function(
+      "return require('path')"
+    ) as unknown as typeof import("path");
+
+    const fs = new Function(
+      "return require('fs')"
+    ) as unknown as typeof import("fs");
+
     const fileName = this._sanitizeFileName(url, mimeType);
     const filePath = path.join(this.baseDir, fileName);
     fs.writeFileSync(filePath, Buffer.from(data));
@@ -200,7 +217,10 @@ class NodeCache {
   }
 
   getLocalPath(url: string): string | null {
-    const fs = require("fs");
+    const fs = new Function(
+      "return require('fs')"
+    ) as unknown as typeof import("fs");
+
     const entry = this.manifest[url];
     return entry && fs.existsSync(entry.filePath) ? entry.filePath : null;
   }
