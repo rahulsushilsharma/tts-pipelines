@@ -125,6 +125,7 @@ await saveAudio(audio.toBlob(), "./speech.wav");
 ```
 
 > Note: Supported in node 18.x and higher.
+
 > Note: Currently not working in ios looking further in the issue
 
 > Note: In case the package stops working please report it and update the package to latest if available.
