@@ -90,34 +90,43 @@ interface CacheEntry {
   timestamp: number;
 }
 
+// Helper to dynamically import Node.js modules (avoids bundler resolution)
+const dynamicImport = new Function("specifier", "return import(specifier)");
+
 class NodeCache {
   baseDir: string;
   manifestPath: string;
   manifest: Record<string, CacheEntry>;
   maxAge: number;
+  initialized: boolean;
 
   constructor(baseDir = ".cache/kitten-tts") {
-    const path = new Function(
-      "return require('path')"
-    ) as unknown as typeof import("path");
-    const fs = new Function(
-      "return require('fs')"
-    ) as unknown as typeof import("fs");
-
-    this.baseDir = path.resolve(baseDir);
-    this.manifestPath = path.join(this.baseDir, "cache-manifest.json");
+    this.baseDir = baseDir;
+    this.manifestPath = "";
+    this.manifest = {};
     this.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
-
-    if (!fs.existsSync(this.baseDir))
-      fs.mkdirSync(this.baseDir, { recursive: true });
-    this.manifest = this._loadManifest();
+    this.initialized = false;
   }
 
-  private _loadManifest(): Record<string, CacheEntry> {
-    const fs = new Function(
-      "return require('fs')"
-    ) as unknown as typeof import("fs");
+  async init() {
+    if (this.initialized) return;
 
+    const path = (await dynamicImport("path")) as typeof import("path");
+    const fs = (await dynamicImport("fs")) as typeof import("fs");
+
+    this.baseDir = path.resolve(this.baseDir);
+    this.manifestPath = path.join(this.baseDir, "cache-manifest.json");
+
+    if (!fs.existsSync(this.baseDir)) {
+      fs.mkdirSync(this.baseDir, { recursive: true });
+    }
+
+    this.manifest = await this._loadManifest();
+    this.initialized = true;
+  }
+
+  async _loadManifest(): Promise<Record<string, CacheEntry>> {
+    const fs = (await dynamicImport("fs")) as typeof import("fs");
     try {
       if (fs.existsSync(this.manifestPath)) {
         return JSON.parse(fs.readFileSync(this.manifestPath, "utf8"));
@@ -128,24 +137,20 @@ class NodeCache {
     return {};
   }
 
-  private _saveManifest() {
-    const fs = new Function(
-      "return require('fs')"
-    ) as unknown as typeof import("fs");
-
+  async _saveManifest() {
+    const fs = (await dynamicImport("fs")) as typeof import("fs");
     fs.writeFileSync(this.manifestPath, JSON.stringify(this.manifest, null, 2));
   }
 
-  private _sanitizeFileName(
-    url: string,
-    mimeType = "application/octet-stream"
-  ) {
+  _sanitizeFileName(url: string, mimeType = "application/octet-stream") {
     const ext = this._inferExtension(mimeType);
     const hash = Buffer.from(url).toString("base64").replace(/[^\w]/g, "");
     return `${hash}.${ext}`;
   }
 
-  private _inferExtension(mimeType: string): string {
+  _inferExtension(mimeType: string): string {
+    const cleanType = mimeType.split(";")[0].trim();
+
     const map: Record<string, string> = {
       "application/octet-stream": "bin",
       "application/wasm": "wasm",
@@ -158,20 +163,19 @@ class NodeCache {
       "audio/ogg": "ogg",
       "model/onnx": "onnx",
     };
-    return map[mimeType] || mimeType.split("/").pop() || "bin";
+    return map[cleanType] || cleanType.split("/").pop() || "bin";
   }
 
   async get(url: string): Promise<ArrayBuffer | null> {
-    const fs = new Function(
-      "return require('fs')"
-    ) as unknown as typeof import("fs");
+    await this.init();
+    const fs = (await dynamicImport("fs")) as typeof import("fs");
 
     const entry = this.manifest[url];
     if (!entry) return null;
 
     if (!fs.existsSync(entry.filePath)) {
       delete this.manifest[url];
-      this._saveManifest();
+      await this._saveManifest();
       return null;
     }
 
@@ -179,7 +183,7 @@ class NodeCache {
     if (age > this.maxAge) {
       fs.unlinkSync(entry.filePath);
       delete this.manifest[url];
-      this._saveManifest();
+      await this._saveManifest();
       return null;
     }
 
@@ -195,16 +199,13 @@ class NodeCache {
     data: ArrayBuffer,
     mimeType = "application/octet-stream"
   ) {
-    const path = new Function(
-      "return require('path')"
-    ) as unknown as typeof import("path");
-
-    const fs = new Function(
-      "return require('fs')"
-    ) as unknown as typeof import("fs");
+    await this.init();
+    const path = (await dynamicImport("path")) as typeof import("path");
+    const fs = (await dynamicImport("fs")) as typeof import("fs");
 
     const fileName = this._sanitizeFileName(url, mimeType);
     const filePath = path.join(this.baseDir, fileName);
+    // Write safely and ensure directory exists
     fs.writeFileSync(filePath, Buffer.from(data));
 
     this.manifest[url] = {
@@ -213,14 +214,12 @@ class NodeCache {
       mimeType,
       timestamp: Date.now(),
     };
-    this._saveManifest();
+    await this._saveManifest();
   }
 
-  getLocalPath(url: string): string | null {
-    const fs = new Function(
-      "return require('fs')"
-    ) as unknown as typeof import("fs");
-
+  async getLocalPath(url: string): Promise<string | null> {
+    await this.init();
+    const fs = (await dynamicImport("fs")) as typeof import("fs");
     const entry = this.manifest[url];
     return entry && fs.existsSync(entry.filePath) ? entry.filePath : null;
   }
@@ -231,6 +230,11 @@ class NodeCache {
 // ===================
 export async function cachedFetch(url: string): Promise<Response> {
   const cache = !isBrowser() ? new NodeCache() : new ModelCache();
+
+  // Initialize cache if needed
+  if (cache instanceof NodeCache) {
+    await cache.init();
+  }
 
   // Try cache first
   const cachedData = await cache.get(url);

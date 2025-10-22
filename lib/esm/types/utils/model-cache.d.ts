@@ -19,14 +19,16 @@ declare class NodeCache {
     manifestPath: string;
     manifest: Record<string, CacheEntry>;
     maxAge: number;
+    initialized: boolean;
     constructor(baseDir?: string);
-    private _loadManifest;
-    private _saveManifest;
-    private _sanitizeFileName;
-    private _inferExtension;
+    init(): Promise<void>;
+    _loadManifest(): Promise<Record<string, CacheEntry>>;
+    _saveManifest(): Promise<void>;
+    _sanitizeFileName(url: string, mimeType?: string): string;
+    _inferExtension(mimeType: string): string;
     get(url: string): Promise<ArrayBuffer | null>;
     set(url: string, data: ArrayBuffer, mimeType?: string): Promise<void>;
-    getLocalPath(url: string): string | null;
+    getLocalPath(url: string): Promise<string | null>;
 }
 export declare function cachedFetch(url: string): Promise<Response>;
 export { ModelCache, NodeCache };
